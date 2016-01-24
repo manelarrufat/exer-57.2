@@ -1,0 +1,5 @@
+name = "Ajax Forcontu"
+description = "Implements example of Ajax"
+core = 7.x
+files[] = ajax_forcontu.module
+package = My modules

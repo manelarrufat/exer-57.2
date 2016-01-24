@@ -1,0 +1,72 @@
+<?php
+/**
+ * @file
+ * Módulo Ajax Forcontu
+ * En esta módulo vamos a probar Ajax en Drupal
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ajax_forcontu_menu() {
+  $items = array();
+
+  $items['ajax_forcontu/ajax_link'] = array(
+    'title' => 'Ejemplo de uso de Ajax en Drupal',
+    'page callback' => 'ajax_forcontu_link',
+    'access arguments' => TRUE,
+  );
+
+  //Función de retorno para llamar al servidor via Ajax
+  $items['ajax_forcontu_link_callback'] = array(
+    'page callback' => 'ajax_forcontu_link_response',
+    'access callback' => 'user_access',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementa la función ajax_forcontu_link
+ */
+function ajax_forcontu_link() {
+  //incluimos libreria drupal.ajax
+  drupal_add_library('system', 'drupal.ajax');
+
+  $output = "<div>Haz clic en el enlace para ver la hora del servidor.</div>";
+
+  //generamos un enlace con la clase especial use-ajax
+  // /nojs será borrado de la URL si javascrip está activado
+  $link = l(t('Click here'), 'ajax_forcontu_link_callback/nojs/', 
+    array('attributes' => array('class' => array('use-ajax'))));
+
+  $output .= "<div id='time'></div><div>$link</div>";
+
+  return $output;
+}
+
+/**
+* Función de Callback.
+*
+* Si javascript no está activado, el valor 'nojs' se pasará
+* en el parámetro $type. En caso contrario $type == 'ajax'.
+*
+* @return
+* Si $type == 'ajax', devuelve un array de comandos Ajax.
+* En caso contrario devuelve el contenido cargando la página.
+*/
+function ajax_forcontu_link_response($type = 'ajax' ) {
+  if ($type == 'ajax' ) {
+    $output = "<div id=' time'>" . t("Contenido obtenido desde el
+      servidor vía AJAX: ") . date("H:i:s") . '</div>' ;
+    $commands = array();
+    $commands[] = ajax_command_replace('#time' , $output);
+    $page = array('#type' => 'ajax' , '#commands' => $commands);
+    ajax_deliver($page);
+  } else {
+    $output = t("Contenido devuelto al cargar la página sin Ajax.");
+    return $output;
+  }
+}
